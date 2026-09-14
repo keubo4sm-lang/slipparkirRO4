@@ -159,7 +159,7 @@ function ambilHistory(filter) {
       const time = (String(row[0] || "").match(/\d+/g) || []).join("").padEnd(14, "0");
       return date + time;
     };
-    return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0;
+    return key(a) < key(b) ? 1 : key(a) > key(b) ? -1 : 0;
   }).map(function(row) {
     return {
       waktu: row[0],
