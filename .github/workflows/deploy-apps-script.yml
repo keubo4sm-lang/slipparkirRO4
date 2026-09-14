@@ -26,6 +26,7 @@ jobs:
         run: |
           test -n "$CLASPRC_JSON"
           printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          node -e "const fs=require('fs'); const c=JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8')); if (!c.access_token && !c.token && !c.tokens) throw new Error('CLASPRC_JSON tidak berisi credential clasp yang valid');"
 
       - name: Push to Google Apps Script
-        run: npx --yes @google/clasp@2.5.0 push --force
+        run: npx --yes @google/clasp@3.4.1 push --force
