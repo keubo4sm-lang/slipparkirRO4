@@ -149,7 +149,17 @@ function ambilHistory(filter) {
       (!sampai || tanggal <= sampai) &&
       (!area || row[2] === area);
   }).sort(function(a, b) {
-    return (a[1] + " " + a[0]).localeCompare(b[1] + " " + b[0]);
+    const key = function(row) {
+      const parts = String(row[1] || "").match(/\d+/g) || [];
+      const date = parts.length === 3 && parts[0].length === 4
+        ? parts[0] + parts[1].padStart(2, "0") + parts[2].padStart(2, "0")
+        : parts.length === 3
+          ? parts[2] + parts[1].padStart(2, "0") + parts[0].padStart(2, "0")
+          : "00000000";
+      const time = (String(row[0] || "").match(/\d+/g) || []).join("").padEnd(14, "0");
+      return date + time;
+    };
+    return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0;
   }).map(function(row) {
     return {
       waktu: row[0],
