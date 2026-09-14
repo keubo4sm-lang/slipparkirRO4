@@ -30,3 +30,10 @@ jobs:
 
       - name: Push to Google Apps Script
         run: npx --yes @google/clasp@3.4.1 push --force
+
+      - name: Redeploy Web App
+        env:
+          DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }}
+        run: |
+          test -n "$DEPLOYMENT_ID"
+          npx --yes @google/clasp@3.4.1 deploy --deploymentId "$DEPLOYMENT_ID" --description "GitHub $GITHUB_SHA"
