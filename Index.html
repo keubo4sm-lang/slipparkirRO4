@@ -34,6 +34,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
   padding:5px 10px;border-radius:20px;border:1px solid rgba(110,231,183,.25);display:flex;align-items:center;gap:5px}
 .dot{width:6px;height:6px;border-radius:50%;background:#34d399;animation:pulse 1.8s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.btn-history{height:34px;padding:0 11px;border:1px solid rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.1);
+  color:#fff;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-history:active{background:rgba(255,255,255,.2);transform:scale(.97)}
 
 /* CARD */
 .card{background:#fff;border-radius:18px;box-shadow:var(--sh);margin-top:-30px;position:relative;z-index:2;overflow:hidden}
@@ -146,6 +149,18 @@ option{color:var(--navy);font-weight:500;padding:6px}
 #lightbox .x{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;
   background:rgba(255,255,255,.14);border:none;color:#fff;font-size:20px;cursor:pointer}
 footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;font-weight:500}
+.history-panel{max-width:640px;text-align:left;padding:0;overflow:hidden}
+.history-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--g200);background:var(--g50)}
+.history-head h3{font-size:15px;margin:0;font-weight:700}.history-head p{font-size:11px;color:var(--g500);margin:2px 0 0}
+.history-close{width:32px;height:32px;border:0;border-radius:9px;background:var(--g200);color:var(--g700);font-size:20px;cursor:pointer}
+.history-body{padding:14px 16px;max-height:65vh;overflow:auto}.history-list{display:grid;gap:9px}
+.history-item{border:1px solid var(--g200);border-radius:11px;padding:11px 12px;background:#fff}
+.history-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:4px}
+.history-area{font-size:12.5px;font-weight:700}.history-date{font-size:10.5px;color:var(--g500);white-space:nowrap}
+.history-file{font-size:11px;color:var(--g500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-links{display:flex;gap:12px;margin-top:7px}.history-links a{font-size:11px;color:var(--blue);font-weight:600;text-decoration:none}
+.history-empty{text-align:center;color:var(--g500);font-size:12px;padding:24px 8px}
+@media(max-width:420px){.badge-live{display:none}.btn-history{margin-left:auto}.history-body{padding:12px}.history-top{display:block}.history-date{display:block;margin-top:2px}}
 </style>
 </head>
 <body>
@@ -160,6 +175,10 @@ footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;f
       <h1>Bukti Setor Parkir</h1>
       <p>Sistem Dokumentasi Setoran Harian</p>
     </div>
+    <button type="button" class="btn-history" id="btnHistory" title="Lihat history penginputan">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>
+      History
+    </button>
     <div class="badge-live"><span class="dot"></span>ONLINE</div>
   </div>
 </div>
@@ -285,6 +304,16 @@ footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;f
   </div>
 </div>
 
+<div class="ovl" id="ovlHistory">
+  <div class="panel history-panel">
+    <div class="history-head">
+      <div><h3>History Penginputan</h3><p>Input terbaru dari spreadsheet</p></div>
+      <button type="button" class="history-close" id="historyClose" aria-label="Tutup">&times;</button>
+    </div>
+    <div class="history-body"><div class="history-list" id="historyList"><div class="history-empty">Memuat history…</div></div></div>
+  </div>
+</div>
+
 <div id="lightbox"><button class="x" id="lbX">&times;</button><img id="lbImg" alt=""></div>
 <div id="toasts"></div>
 
@@ -357,6 +386,46 @@ function toast(msg,type){
   $("toasts").appendChild(t);
   setTimeout(()=>{t.style.opacity="0";t.style.transform="translateY(-10px)";t.style.transition=".25s";setTimeout(()=>t.remove(),260);},2600);
 }
+
+/* History input */
+function loadHistory(){
+  $("historyList").innerHTML='<div class="history-empty">Memuat history...</div>';
+  google.script.run
+    .withSuccessHandler(renderHistory)
+    .withFailureHandler(function(err){
+      $("historyList").innerHTML='<div class="history-empty">History belum dapat dimuat.</div>';
+      toast(err && err.message ? err.message : "Gagal memuat history", "err");
+    })
+    .ambilHistory();
+}
+
+function renderHistory(rows){
+  const list=$("historyList");
+  list.innerHTML="";
+  if(!rows || !rows.length){
+    list.innerHTML='<div class="history-empty">Belum ada data penginputan.</div>';
+    return;
+  }
+  rows.forEach(function(row){
+    const item=document.createElement("div"); item.className="history-item";
+    const top=document.createElement("div"); top.className="history-top";
+    const area=document.createElement("div"); area.className="history-area"; area.textContent=row.areaParkir||"Tanpa area";
+    const date=document.createElement("div"); date.className="history-date"; date.textContent=(row.tanggal||"-")+" · "+(row.waktu||"-");
+    top.append(area,date);
+    const file=document.createElement("div"); file.className="history-file"; file.textContent=row.namaFile||"Tanpa nama file";
+    const links=document.createElement("div"); links.className="history-links";
+    if(row.fileUrl){ const a=document.createElement("a"); a.href=row.fileUrl; a.target="_blank"; a.rel="noopener"; a.textContent="Buka file"; links.appendChild(a); }
+    if(row.folderUrl){ const a=document.createElement("a"); a.href=row.folderUrl; a.target="_blank"; a.rel="noopener"; a.textContent="Buka folder"; links.appendChild(a); }
+    item.append(top,file,links); list.appendChild(item);
+  });
+}
+
+$("btnHistory").onclick=function(){
+  $("ovlHistory").classList.add("show");
+  loadHistory();
+};
+$("historyClose").onclick=function(){ $("ovlHistory").classList.remove("show"); };
+$("ovlHistory").onclick=function(e){ if(e.target.id==="ovlHistory") $("ovlHistory").classList.remove("show"); };
 
 /* Pilih file */
 $("dz").onclick = ()=> $("fGal").click();

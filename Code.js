@@ -131,6 +131,28 @@ function simpanBukti(data) {
 }
 
 
+/** Mengambil riwayat input terbaru untuk ditampilkan di halaman. */
+function ambilHistory() {
+  const sheet = getSheet_();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  const startRow = Math.max(2, lastRow - 99);
+  const rows = sheet.getRange(startRow, 1, lastRow - startRow + 1, 6).getDisplayValues();
+
+  return rows.reverse().map(function(row) {
+    return {
+      waktu: row[0],
+      tanggal: row[1],
+      areaParkir: row[2],
+      namaFile: row[3],
+      fileUrl: row[4],
+      folderUrl: row[5]
+    };
+  });
+}
+
+
 /**
  * JALANKAN INI SEKALI untuk mengecek konfigurasi sudah benar.
  * Lihat hasilnya di menu "Log Eksekusi".
