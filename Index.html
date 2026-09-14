@@ -175,7 +175,7 @@ footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;f
       <h1>Bukti Setor Parkir</h1>
       <p>Sistem Dokumentasi Setoran Harian</p>
     </div>
-    <button type="button" class="btn-history" id="btnHistory" title="Lihat history penginputan">
+    <button type="button" class="btn-history" id="btnHistory" title="Buka history penginputan">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>
       History
     </button>
@@ -304,16 +304,6 @@ footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;f
   </div>
 </div>
 
-<div class="ovl" id="ovlHistory">
-  <div class="panel history-panel">
-    <div class="history-head">
-      <div><h3>History Penginputan</h3><p>Input terbaru dari spreadsheet</p></div>
-      <button type="button" class="history-close" id="historyClose" aria-label="Tutup">&times;</button>
-    </div>
-    <div class="history-body"><div class="history-list" id="historyList"><div class="history-empty">Memuat history…</div></div></div>
-  </div>
-</div>
-
 <div id="lightbox"><button class="x" id="lbX">&times;</button><img id="lbImg" alt=""></div>
 <div id="toasts"></div>
 
@@ -343,6 +333,7 @@ const AREA_GROUPS = {
   ]
 };
 const MAX_FILE = 20, MAX_W = 1600, QUALITY = 0.8;
+const HISTORY_URL = "https://docs.google.com/spreadsheets/d/1qqWkywd768E9PwnRaT9Z492ZbldqSKeYBYvb_MmG7c4/edit";
 /* ============================================ */
 
 const $ = id => document.getElementById(id);
@@ -387,45 +378,7 @@ function toast(msg,type){
   setTimeout(()=>{t.style.opacity="0";t.style.transform="translateY(-10px)";t.style.transition=".25s";setTimeout(()=>t.remove(),260);},2600);
 }
 
-/* History input */
-function loadHistory(){
-  $("historyList").innerHTML='<div class="history-empty">Memuat history...</div>';
-  google.script.run
-    .withSuccessHandler(renderHistory)
-    .withFailureHandler(function(err){
-      $("historyList").innerHTML='<div class="history-empty">History belum dapat dimuat.</div>';
-      toast(err && err.message ? err.message : "Gagal memuat history", "err");
-    })
-    .ambilHistory();
-}
-
-function renderHistory(rows){
-  const list=$("historyList");
-  list.innerHTML="";
-  if(!rows || !rows.length){
-    list.innerHTML='<div class="history-empty">Belum ada data penginputan.</div>';
-    return;
-  }
-  rows.forEach(function(row){
-    const item=document.createElement("div"); item.className="history-item";
-    const top=document.createElement("div"); top.className="history-top";
-    const area=document.createElement("div"); area.className="history-area"; area.textContent=row.areaParkir||"Tanpa area";
-    const date=document.createElement("div"); date.className="history-date"; date.textContent=(row.tanggal||"-")+" · "+(row.waktu||"-");
-    top.append(area,date);
-    const file=document.createElement("div"); file.className="history-file"; file.textContent=row.namaFile||"Tanpa nama file";
-    const links=document.createElement("div"); links.className="history-links";
-    if(row.fileUrl){ const a=document.createElement("a"); a.href=row.fileUrl; a.target="_blank"; a.rel="noopener"; a.textContent="Buka file"; links.appendChild(a); }
-    if(row.folderUrl){ const a=document.createElement("a"); a.href=row.folderUrl; a.target="_blank"; a.rel="noopener"; a.textContent="Buka folder"; links.appendChild(a); }
-    item.append(top,file,links); list.appendChild(item);
-  });
-}
-
-$("btnHistory").onclick=function(){
-  $("ovlHistory").classList.add("show");
-  loadHistory();
-};
-$("historyClose").onclick=function(){ $("ovlHistory").classList.remove("show"); };
-$("ovlHistory").onclick=function(e){ if(e.target.id==="ovlHistory") $("ovlHistory").classList.remove("show"); };
+$("btnHistory").onclick=function(){ window.open(HISTORY_URL,"_blank"); };
 
 /* Pilih file */
 $("dz").onclick = ()=> $("fGal").click();
