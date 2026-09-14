@@ -131,6 +131,36 @@ function simpanBukti(data) {
 }
 
 
+/** Mengambil rincian input untuk tab History dengan filter tanggal dan area. */
+function ambilHistory(filter) {
+  const sheet = getSheet_();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  filter = filter || {};
+  const dari = filter.dari || "";
+  const sampai = filter.sampai || "";
+  const area = filter.area || "";
+  const rows = sheet.getRange(2, 1, lastRow - 1, 6).getDisplayValues();
+
+  return rows.reverse().filter(function(row) {
+    const tanggal = row[1];
+    return (!dari || tanggal >= dari) &&
+      (!sampai || tanggal <= sampai) &&
+      (!area || row[2] === area);
+  }).map(function(row) {
+    return {
+      waktu: row[0],
+      tanggal: row[1],
+      areaParkir: row[2],
+      namaFile: row[3],
+      fileUrl: row[4],
+      folderUrl: row[5]
+    };
+  });
+}
+
+
 /**
  * JALANKAN INI SEKALI untuk mengecek konfigurasi sudah benar.
  * Lihat hasilnya di menu "Log Eksekusi".

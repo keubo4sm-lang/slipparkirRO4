@@ -37,6 +37,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
 .btn-history{height:34px;padding:0 11px;border:1px solid rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.1);
   color:#fff;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .btn-history:active{background:rgba(255,255,255,.2);transform:scale(.97)}
+.tabs{display:flex;gap:8px;margin-top:-20px;position:relative;z-index:4}
+.tab{flex:1;height:42px;border:1px solid var(--g200);border-radius:11px;background:#fff;color:var(--g500);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:var(--sh)}
+.tab.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.view{display:none}.view.active{display:block}
 
 /* CARD */
 .card{background:#fff;border-radius:18px;box-shadow:var(--sh);margin-top:-30px;position:relative;z-index:2;overflow:hidden}
@@ -160,6 +164,14 @@ footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;f
 .history-file{font-size:11px;color:var(--g500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .history-links{display:flex;gap:12px;margin-top:7px}.history-links a{font-size:11px;color:var(--blue);font-weight:600;text-decoration:none}
 .history-empty{text-align:center;color:var(--g500);font-size:12px;padding:24px 8px}
+.history-view{margin-top:14px}.history-filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:15px;background:#fff;border-radius:14px;box-shadow:var(--sh)}
+.history-filters label{display:block;font-size:11px;font-weight:700;color:var(--g700);margin-bottom:5px}.history-filters .control{height:42px;font-size:12px;padding:0 10px}
+.history-filters .filter-area{grid-column:1 / -1}.history-actions{display:flex;gap:8px;grid-column:1 / -1}.history-actions button{flex:1;height:40px;border:0;border-radius:10px;font-family:inherit;font-weight:700;cursor:pointer}
+.history-actions .apply{background:var(--blue);color:#fff}.history-actions .reset{background:var(--g100);color:var(--g700)}
+.history-summary{font-size:11px;color:var(--g500);margin:14px 2px 8px}.history-table-wrap{overflow:auto;background:#fff;border-radius:14px;box-shadow:var(--sh)}
+.history-table{width:100%;border-collapse:collapse;min-width:570px;font-size:11px}.history-table th{background:var(--g50);color:var(--g700);font-size:10px;text-align:left;white-space:nowrap}
+.history-table th,.history-table td{padding:11px 10px;border-bottom:1px solid var(--g200);vertical-align:top}.history-table tr:last-child td{border-bottom:0}.history-table td:first-child{font-weight:700;white-space:nowrap}
+.history-table .file-name{max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.history-table a{color:var(--blue);font-weight:700;text-decoration:none;white-space:nowrap}
 @media(max-width:420px){.badge-live{display:none}.btn-history{margin-left:auto}.history-body{padding:12px}.history-top{display:block}.history-date{display:block;margin-top:2px}}
 </style>
 </head>
@@ -175,15 +187,17 @@ footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;f
       <h1>Bukti Setor Parkir</h1>
       <p>Sistem Dokumentasi Setoran Harian</p>
     </div>
-    <button type="button" class="btn-history" id="btnHistory" title="Buka history penginputan">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>
-      History
-    </button>
     <div class="badge-live"><span class="dot"></span>ONLINE</div>
   </div>
 </div>
 
 <div class="wrap">
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab active" id="tabInput" role="tab">Input Baru</button>
+    <button type="button" class="tab" id="tabHistory" role="tab">History Penginputan</button>
+  </div>
+
+  <div class="view active" id="inputView">
   <form id="form" autocomplete="off">
 
     <div class="card">
@@ -250,6 +264,18 @@ footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;f
       </div>
     </div>
   </form>
+  </div>
+
+  <div class="view history-view" id="historyView">
+    <div class="history-filters">
+      <div><label for="historyFrom">Dari tanggal</label><input type="date" id="historyFrom" class="control"></div>
+      <div><label for="historyTo">Sampai tanggal</label><input type="date" id="historyTo" class="control"></div>
+      <div class="filter-area"><label for="historyArea">Wilayah parkir</label><select id="historyArea" class="control"><option value="">Semua wilayah</option></select></div>
+      <div class="history-actions"><button type="button" class="apply" id="historyApply">Tampilkan</button><button type="button" class="reset" id="historyReset">Reset</button></div>
+    </div>
+    <div class="history-summary" id="historySummary">Pilih filter untuk menampilkan history.</div>
+    <div class="history-table-wrap"><table class="history-table"><thead><tr><th>Waktu Input</th><th>Tanggal</th><th>Wilayah</th><th>File</th><th>Link</th></tr></thead><tbody id="historyRows"><tr><td colspan="5" class="history-empty">Tekan Tampilkan untuk memuat data.</td></tr></tbody></table></div>
+  </div>
 
   <footer>Bukti Setor Parkir · Tersimpan otomatis per tanggal di Google Drive</footer>
 </div>
@@ -333,7 +359,6 @@ const AREA_GROUPS = {
   ]
 };
 const MAX_FILE = 20, MAX_W = 1600, QUALITY = 0.8;
-const HISTORY_URL = "https://docs.google.com/spreadsheets/d/1qqWkywd768E9PwnRaT9Z492ZbldqSKeYBYvb_MmG7c4/edit";
 /* ============================================ */
 
 const $ = id => document.getElementById(id);
@@ -342,12 +367,16 @@ let images = [], folderUrl = "";
 /* Isi dropdown bergrup */
 (function(){
   const sel = $("area");
+  const historySel = $("historyArea");
   for (const grup in AREA_GROUPS){
     const og = document.createElement("optgroup");
     og.label = grup;
     AREA_GROUPS[grup].forEach(a=>{
       const o = document.createElement("option");
       o.value = a; o.textContent = a; og.appendChild(o);
+      const historyOption = document.createElement("option");
+      historyOption.value = a; historyOption.textContent = a;
+      historySel.appendChild(historyOption);
     });
     sel.appendChild(og);
   }
@@ -378,7 +407,59 @@ function toast(msg,type){
   setTimeout(()=>{t.style.opacity="0";t.style.transform="translateY(-10px)";t.style.transition=".25s";setTimeout(()=>t.remove(),260);},2600);
 }
 
-$("btnHistory").onclick=function(){ window.open(HISTORY_URL,"_blank"); };
+/* Tab input dan history */
+function showTab(tab){
+  const history = tab === "history";
+  $("inputView").classList.toggle("active", !history);
+  $("historyView").classList.toggle("active", history);
+  $("tabInput").classList.toggle("active", !history);
+  $("tabHistory").classList.toggle("active", history);
+  if(history) loadHistory();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+$("tabInput").onclick=function(){ showTab("input"); };
+$("tabHistory").onclick=function(){ showTab("history"); };
+
+function loadHistory(){
+  $("historyRows").innerHTML='<tr><td colspan="5" class="history-empty">Memuat data...</td></tr>';
+  google.script.run
+    .withSuccessHandler(renderHistory)
+    .withFailureHandler(function(err){
+      $("historyRows").innerHTML='<tr><td colspan="5" class="history-empty">History belum dapat dimuat.</td></tr>';
+      toast(err && err.message ? err.message : "Gagal memuat history", "err");
+    })
+    .ambilHistory({
+      dari: $("historyFrom").value,
+      sampai: $("historyTo").value,
+      area: $("historyArea").value
+    });
+}
+
+function renderHistory(rows){
+  const body=$("historyRows");
+  body.innerHTML="";
+  $("historySummary").textContent = (rows && rows.length ? rows.length : 0) + " input ditemukan";
+  if(!rows || !rows.length){
+    body.innerHTML='<tr><td colspan="5" class="history-empty">Tidak ada data untuk filter ini.</td></tr>';
+    return;
+  }
+  rows.forEach(function(row){
+    const tr=document.createElement("tr");
+    [row.waktu, row.tanggal, row.areaParkir, row.namaFile].forEach(function(value, index){
+      const td=document.createElement("td"); td.textContent=value || "-";
+      if(index===3) td.className="file-name";
+      tr.appendChild(td);
+    });
+    const links=document.createElement("td");
+    if(row.fileUrl){ const fileLink=document.createElement("a"); fileLink.href=row.fileUrl; fileLink.target="_blank"; fileLink.rel="noopener"; fileLink.textContent="File"; links.appendChild(fileLink); }
+    if(row.folderUrl){ const folderLink=document.createElement("a"); folderLink.href=row.folderUrl; folderLink.target="_blank"; folderLink.rel="noopener"; folderLink.textContent="Folder"; folderLink.style.marginLeft="8px"; links.appendChild(folderLink); }
+    tr.appendChild(links); body.appendChild(tr);
+  });
+}
+$("historyApply").onclick=loadHistory;
+$("historyReset").onclick=function(){
+  $("historyFrom").value=""; $("historyTo").value=""; $("historyArea").value=""; loadHistory();
+};
 
 /* Pilih file */
 $("dz").onclick = ()=> $("fGal").click();
