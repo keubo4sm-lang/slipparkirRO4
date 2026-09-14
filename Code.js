@@ -143,11 +143,13 @@ function ambilHistory(filter) {
   const area = filter.area || "";
   const rows = sheet.getRange(2, 1, lastRow - 1, 6).getDisplayValues();
 
-  return rows.reverse().filter(function(row) {
+  return rows.filter(function(row) {
     const tanggal = row[1];
     return (!dari || tanggal >= dari) &&
       (!sampai || tanggal <= sampai) &&
       (!area || row[2] === area);
+  }).sort(function(a, b) {
+    return (a[1] + " " + a[0]).localeCompare(b[1] + " " + b[0]);
   }).map(function(row) {
     return {
       waktu: row[0],

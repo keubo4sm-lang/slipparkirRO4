@@ -274,7 +274,7 @@ footer{text-align:center;font-size:10.5px;color:var(--g400);padding:20px 0 8px;f
       <div class="history-actions"><button type="button" class="apply" id="historyApply">Tampilkan</button><button type="button" class="reset" id="historyReset">Reset</button></div>
     </div>
     <div class="history-summary" id="historySummary">Pilih filter untuk menampilkan history.</div>
-    <div class="history-table-wrap"><table class="history-table"><thead><tr><th>Waktu Input</th><th>Tanggal</th><th>Wilayah</th><th>File</th><th>Link</th></tr></thead><tbody id="historyRows"><tr><td colspan="5" class="history-empty">Tekan Tampilkan untuk memuat data.</td></tr></tbody></table></div>
+    <div class="history-table-wrap"><table class="history-table"><thead><tr><th>Tanggal</th><th>Wilayah</th><th>File</th><th>Waktu Input</th><th>Link</th></tr></thead><tbody id="historyRows"><tr><td colspan="5" class="history-empty">Tekan Tampilkan untuk memuat data.</td></tr></tbody></table></div>
   </div>
 
   <footer>Bukti Setor Parkir · Tersimpan otomatis per tanggal di Google Drive</footer>
@@ -445,7 +445,7 @@ function renderHistory(rows){
   }
   rows.forEach(function(row){
     const tr=document.createElement("tr");
-    [row.waktu, row.tanggal, row.areaParkir, row.namaFile].forEach(function(value, index){
+    [row.tanggal, row.areaParkir, row.namaFile, row.waktu].forEach(function(value, index){
       const td=document.createElement("td"); td.textContent=value || "-";
       if(index===3) td.className="file-name";
       tr.appendChild(td);
